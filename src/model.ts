@@ -6,19 +6,19 @@ type RetryParams = {
     retryPauseMs?: number;
 }
 
-type SergeConfig = {
-    host?: string; 
+type LlamaConfig = {
+    url?: string; 
     model: string;
-    initPrompt?: string;
+    maxTokens?: number;
 }
 
-export class SergeLanguageModel implements TypeChatLanguageModel {
-    config: SergeConfig;
+export class LlamaLanguageModel implements TypeChatLanguageModel {
+    config: LlamaConfig;
     client: axios.AxiosInstance;
     retryMaxAttempts: number;
     retryPauseMs: number;
 
-    constructor(config: SergeConfig, axiosConfig: object, retryParams: RetryParams | undefined) {
+    constructor(config: LlamaConfig, axiosConfig: object, retryParams: RetryParams | undefined) {
         this.config = config;
         this.client = axios.create(axiosConfig);
         this.retryMaxAttempts = retryParams?.retryPauseMs ?? 3;
@@ -27,12 +27,19 @@ export class SergeLanguageModel implements TypeChatLanguageModel {
 
     async complete(prompt: string): Promise<Result<string>> {
         let retryCount = 0;
+        const url = this.config.url ?? "http://localhost:8000/v1/chat/completions";
         
         while(true) {
-            const result = await this.chat(prompt);
+            const params = {
+                max_tokens: this.config.maxTokens ?? 2000,
+                model: this.config.model,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0,
+                n: 1
+            };
+            const result = await this.client.post(url, params, { validateStatus: status => true });
             if (result.status === 200) {
-                const data = JSON.parse(result.data);
-                return success(data.choices[0].text ?? "");
+                return success(result.data.choices[0].message?.content ?? "");
             }
             if (!isTransientHttpError(result.status) || retryCount >= this.retryMaxAttempts) {
                 return error(`REST API error ${result.status}: ${result.statusText}`);
@@ -41,33 +48,6 @@ export class SergeLanguageModel implements TypeChatLanguageModel {
             retryCount++;
         }
 
-    }
-
-    async chat(prompt: string): Promise<axios.AxiosResponse> {
-        const host = this.config.host ?? 'http://localhost:8008';
-        const chatParams = {
-            model: this.config.model,
-            init_prompt: this.config.initPrompt ?? "",
-        };
-        const params = {
-            prompt: prompt,
-        }
-
-        // create chat
-        const chatRes = await this.client.post(`${host}/api/chat`, null, {params: chatParams});
-        if(chatRes.status !== 200) {
-            return chatRes;
-        }
-        const chatId = chatRes.data;
-        console.log(chatId)
-
-        // ask question
-        const result = await this.client.post(`${host}/api/chat/${chatId}/question`, null, {params: params});
-        console.log(result.data)
-
-        // delete chat
-        // this.client.delete(`${host}/api/${chatId}`);
-        return result;
     }
 }
 

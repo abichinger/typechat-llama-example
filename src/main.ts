@@ -2,10 +2,11 @@ import fs from "fs";
 import path from "path";
 
 import { createJsonTranslator, processRequests } from "typechat";
-import { SergeLanguageModel } from "./model";
+import { LlamaLanguageModel } from "./model";
 import { SentimentResponse } from "./schema";
 
-const model = new SergeLanguageModel({model: "llama-2-13b-chat.ggmlv3.q4_0"}, {}, undefined);
+// const model = createOpenAILanguageModel("", "", "http://localhost:8000/v1/chat/completions");
+const model = new LlamaLanguageModel({model: ""}, {}, undefined);
 const schema = fs.readFileSync(path.join(__dirname, "../src/schema.ts"), "utf8");
 const translator = createJsonTranslator<SentimentResponse>(model, schema, "SentimentResponse");
 

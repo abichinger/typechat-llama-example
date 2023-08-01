@@ -1,13 +1,11 @@
 services:
-  serge:
-    image: ghcr.io/serge-chat/serge:latest
-    container_name: serge
+  llama-cpp-python:
+    image: ghcr.io/abetlen/llama-cpp-python:latest
+    container_name: llama-cpp-python
     restart: unless-stopped
     ports:
-      - 8008:8008
+      - 8000:8000
+    environment:
+      - MODEL=/models/llama-2-13b-chat.ggmlv3.q4_0.bin
     volumes:
-      - ./models:/usr/src/app/weights
-      - datadb:/data/db/
-
-volumes:
-  datadb:
+      - ./models:/models
