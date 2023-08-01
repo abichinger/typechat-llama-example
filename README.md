@@ -1,6 +1,8 @@
-# TypeChat-llama-example - TypeChat with LLaMA
+# TypeChat-llama-example - TypeChat with Llama
 
-Sentiment example using TypeChat with a self hosted LLM. No API keys required.
+Sentiment example using [TypeChat](https://github.com/microsoft/TypeChat) with a self hosted LLM. No API keys required.
+
+![Terminalizer](./terminalizer.gif)
 
 ## ✅ Requirements
 
@@ -16,7 +18,7 @@ Sentiment example using TypeChat with a self hosted LLM. No API keys required.
 curl -L "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/resolve/main/llama-2-13b-chat.ggmlv3.q4_0.bin" --create-dirs -o models/llama-2-13b-chat.ggmlv3.q4_0.bin
 ```
 
-**Start llama-cpp web server:** 
+**Start llama-cpp-python web server:** 
 
 ```bash
 docker-compose up -d
